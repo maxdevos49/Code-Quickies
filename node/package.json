@@ -1,0 +1,6 @@
+{
+    "name": "node-quickies",
+    "workspaces": [
+        "programs/*"
+    ]
+}

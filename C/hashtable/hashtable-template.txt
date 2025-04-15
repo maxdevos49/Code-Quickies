@@ -1,0 +1,25 @@
+#ifndef __{{NAME}}_HT
+#define __{{NAME}}_HT 1
+
+typedef struct
+{
+    const char *key;
+    {{VALUE_TYPE}} value;
+}
+{{NAME}}_entry_t;
+
+typedef struct
+{
+    {{NAME}}_entry_t *entries;
+    size_t capacity;
+    size_t length;
+} {{NAME}}_ht_t;
+
+{{NAME}}_ht_t {{NAME}}_create(void);
+void {{NAME}}_destroy({{NAME}}_ht_t *ht);
+bool {{NAME}}_has({{NAME}}_ht_t ht, const char *key);
+bool {{NAME}}_set({{NAME}}_ht_t ht, const char *key, {{VALUE_TYPE}} value);
+{{VALUE_TYPE}} *{{NAME}}_get({{NAME}}_ht_t ht, const char *key);
+size_t {{NAME}}_length({{NAME}}_ht_t ht, const char *key);
+
+#endif

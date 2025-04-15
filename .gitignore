@@ -1,0 +1,13 @@
+# MacOS
+.DS_Store
+
+# VSCode
+.vscode
+
+# C
+*.o
+**/bin
+**/obj
+
+# Node
+**/node_modules

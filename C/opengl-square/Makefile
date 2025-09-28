@@ -1,27 +1,28 @@
 CC=clang
-PKGS=glfw3
-CFLAGS=	-std=c11 						\
-		-Wall							\
-		-Wextra							\
-		-Werror							\
-		-pedantic 						\
-		-Ivendor/glad/include			\
-		$(shell pkg-config --cflags $(PKGS))
-LIBS=$(shell pkg-config --static --libs $(PKGS))
+CFLAGS=\
+	-std=c11 					\
+	-Wall						\
+	-Wextra						\
+	-Werror						\
+	-pedantic 					\
+	-I../vendor/glad/include	\
+	-I../vendor/glfw/3.4/include
+LIBS=-L../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
 
-RELEASE_CFLAGS=-O3
-DEBUG_CFLAGS=-g -O0 -DDEBUG -fsanitize=address,undefined,signed-integer-overflow,unsigned-integer-overflow
-
-OBJ=obj/main.o
-DEP=$(OBJ:.o=.d)
 TARGET=bin/square
+OBJ=\
+	obj/main.o
 
-.PHONY: all
-all: CFLAGS+=$(RELEASE_CFLAGS)
-all: $(TARGET)
+#
+# Configure above
+# ==============================================================================
 
-.phony: debug
-debug: CFLAGS+=$(DEBUG_CFLAGS)
+.PHONY: release
+release: CFLAGS+= -O3 -Werror
+release: $(TARGET)
+
+.PHONY: debug
+debug: CFLAGS+= -g -O0 -DDEBUG -fsanitize=address,undefined,signed-integer-overflow,unsigned-integer-overflow
 debug: $(TARGET)
 
 $(TARGET): bin obj $(OBJ)
@@ -33,6 +34,7 @@ obj/%.o: src/%.c
 bin obj:
 	mkdir -p $@
 
+DEP=$(OBJ:.o=.d)
 -include $(DEP)
 
 .PHONY: clean

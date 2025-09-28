@@ -1,13 +1,13 @@
 CC=clang
-PKGS=glfw3
-LIBS=
 CFLAGS=\
-	-std=c11				\
-	-Wall					\
-	-Wextra					\
-	-pedantic				\
-	-I/opt/homebrew/Cellar/cglm/0.9.6/include\
-	-Ivendor/glad/include
+	-std=c11					\
+	-Wall						\
+	-Wextra						\
+	-pedantic					\
+	-I../vendor/glad/include	\
+	-I../vendor/glfw/3.4/include\
+	-I../vendor/cglm/0.9.6/include
+LIBS=-L../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
 
 TARGET=bin/transform
 OBJ=\
@@ -16,10 +16,6 @@ OBJ=\
 #
 # Configure above
 # ==============================================================================
-
-CFLAGS+=$(shell pkg-config --cflags $(PKGS))
-LIBS+=$(shell pkg-config --static --libs $(PKGS))
-DEP=$(OBJ:.o=.d)
 
 .PHONY: release
 release: CFLAGS+= -O3 -Werror
@@ -38,6 +34,7 @@ obj/%.o: src/%.c
 bin obj:
 	mkdir -p $@
 
+DEP=$(OBJ:.o=.d)
 -include $(DEP)
 
 .PHONY: clean

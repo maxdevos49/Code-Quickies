@@ -3,64 +3,20 @@
 #endif
 
 #define FILETOOLS_IMPLEMENTATION
+// #include "filetools.h"
 #define SHADERTOOLS_IMPLEMENTATION
 #include "shadertools.h"
-
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 #define GLAD_GL_IMPLEMENTATION
-#include <assert.h>
 #include <glad/gl.h>
+
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct {
-  float x;
-  float y;
-  float z;
-} Vec3;
-
-typedef struct {
-  Vec3 *data;
-  size_t length;
-  size_t capacity;
-} Vec3Array;
-
-int initVec3Array(Vec3Array *arr, size_t capacity) {
-  assert(arr != NULL);
-
-  Vec3 *data = malloc(sizeof(*(arr->data)) * capacity);
-  if (data == NULL) {
-    return -1;
-  }
-
-  arr->data = data;
-  arr->capacity = capacity;
-  arr->length = 0;
-
-  return 0;
-}
-
-int pushBackVec3(Vec3Array *arr, Vec3 value) {
-  assert(arr != NULL);
-
-  if (arr->length == arr->capacity) {
-    size_t new_capacity = (arr->capacity == 0) ? 1 : arr->capacity * 2;
-    Vec3 *new_data = realloc(arr->data, sizeof(*(arr->data)) * new_capacity);
-    if (new_data == NULL) {
-      return -1;
-    }
-
-    arr->data = new_data;
-	arr->capacity = new_capacity;
-  }
-
-  arr->data[arr->length++] = value;
-
-  return 0;
-}
-
 int main(void) {
+
   int major, minor, revision;
   glfwGetVersion(&major, &minor, &revision);
   printf("Initializing GLFW v%i.%i.%i\n", major, minor, revision);
@@ -77,7 +33,7 @@ int main(void) {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT,
                  GL_TRUE); // Removes deprecated features of older versions
 
-  GLFWwindow *window = glfwCreateWindow(500, 500, "Hello Square", NULL, NULL);
+  GLFWwindow *window = glfwCreateWindow(500, 500, "Hello Circle", NULL, NULL);
   if (!window) {
     glfwTerminate();
     return EXIT_FAILURE;
@@ -103,39 +59,49 @@ int main(void) {
   }
 
   //
-  // Square
+  // Circle
   //
 
-  GLuint VAO, VBO, EBO;
-
+  GLuint VAO;
   glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
-
-  float vertices[] = {
-      0.5f,  0.5f,  0.0f, // Top right
-      0.5f,  -0.5f, 0.0f, // Bottom right
-      -0.5f, -0.5f, 0.0f, // Bottom left
-      -0.5f, 0.5f,  0.0f  // Top left
-  };
-
   glBindVertexArray(VAO);
+
+  GLuint VBO;
+  glGenBuffers(1, &VBO);
+
+  float origin_x = 0.0f;
+  float origin_y = 0.0f;
+  float radius = 0.5;
+  int segments = 40;
+
+  float vertices[(segments + 2) * 3];
+
+  // Origin
+  vertices[0] = origin_x;
+  vertices[1] = origin_y;
+  vertices[2] = 0.0f;
+
+  for (int i = 0; i < segments; i++) {
+    float rad = 2 * M_PI * ((float)i / (float)segments);
+    float x = radius * cos(rad);
+    float y = radius * sin(rad);
+
+    int idx = 3 + (i * 3);
+    vertices[idx + 0] = x;
+    vertices[idx + 1] = y;
+    vertices[idx + 2] = 0.0f;
+  }
+
+  // Closing Point (Same as vertex[1])
+  vertices[(segments + 1) * 3 + 0] = vertices[3];
+  vertices[(segments + 1) * 3 + 1] = vertices[4];
+  vertices[(segments + 1) * 3 + 2] = vertices[4];
+
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  unsigned int indices[] = {
-      0, 1, 3, // First Triangle
-      3, 2, 1  // Second Triangle
-  };
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-               GL_STATIC_DRAW);
-
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
-
-  //   glBindVertexArray(0);
 
   while (!glfwWindowShouldClose(window)) {
     glClearColor(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
@@ -143,10 +109,9 @@ int main(void) {
 
     glUseProgram(shader_program);
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, segments + 2);
 
     glfwSwapBuffers(window);
-
     glfwPollEvents();
   }
 

@@ -1,0 +1,22 @@
+OpenGL Circle
+-------------
+
+Sudo code to generate vertices to render a circle in opengl using GL_TRIANGLE_FAN
+---------------------------------------------------------------------------------
+
+	origin_x = 0
+	origin_y = 0
+	radius = 0.5
+	segments = 10
+
+	vertices = []
+
+	vertices.push([origin_x, origin_y])
+
+	for i = 0 to segments
+		angle_rad = 2 * PI * (i/segments)
+		x = origin_x + radius * cos(angle_rad)
+		y = origin_y + radius * sin(angle_rad)
+		vertices.push([x, y])
+
+	vertices.push(vertices[1])

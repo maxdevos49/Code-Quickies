@@ -5,14 +5,14 @@
 #define FILETOOLS_IMPLEMENTATION
 #define SHADERTOOLS_IMPLEMENTATION
 #include "shadertools.h"
+
 #define GLFW_INCLUDE_NONE
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
-#include <cglm/cglm.h>
-
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -47,23 +47,18 @@ static void glCheckError_(const char *file, int line) {
 #define glCheckError() glCheckError_(__FILE__, __LINE__)
 
 int main(void) {
-  int major, minor, revision;
-  glfwGetVersion(&major, &minor, &revision);
-  printf("Initializing GLFW v%i.%i.%i\n", major, minor, major);
-
   if (!glfwInit()) {
     fprintf(stderr, "GLFW failed to initialize\n");
     return EXIT_FAILURE;
   }
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-  GLFWwindow *window =
-      glfwCreateWindow(500, 500, "Hello Transform", NULL, NULL);
-  if (!window) {
+  GLFWwindow *window = glfwCreateWindow(500, 500, "Hello Cube", NULL, NULL);
+  if (window == NULL) {
     glfwTerminate();
     return EXIT_FAILURE;
   }
@@ -77,8 +72,25 @@ int main(void) {
     return EXIT_FAILURE;
   }
 
-  printf("Loaded OpenGL v%d.%d\b", GLAD_VERSION_MAJOR(version),
-         GLAD_VERSION_MINOR(version));
+  stbi_set_flip_vertically_on_load(1);
+  int width, height, nrChannels;
+  unsigned char *data =
+      stbi_load("res/textures/blocks.png", &width, &height, &nrChannels, 0);
+  if (data == NULL) {
+    fprintf(stderr, "Failed to load texture.\n");
+    glfwTerminate();
+    return EXIT_FAILURE;
+  }
+
+  GLuint texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  stbi_image_free(data);
+  data = NULL;
 
   GLuint shader_program = 0;
   if (loadShaderProgram("res/shaders/basic.vert", "res/shaders/basic.frag",
@@ -92,48 +104,45 @@ int main(void) {
   glBindVertexArray(VAO);
 
   float vertices[] = {
-      -0.5f, 0.5f,  0.0f, // Top Left
-      0.5f,  0.5f,  0.0f, // Top Right
-      0.5f,  -0.5f, 0.0f, // Bottom Right
-      -0.5f, -0.5f, 0.0f  // Bottom Left
+      0.5f,  0.5f,  0.0f, 1.0f/3.0f, 1.0f, // top right
+      0.5f,  -0.5f, 0.0f, 1.0f/3.0f, 0.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
+      -0.5f, 0.5f,  0.0f, 0.0f, 1.0f  // top left
   };
 
   GLuint VBO;
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
+
+  unsigned int indices[] = {0, 1, 2, 0, 2, 3};
+
+  GLuint EBO;
+  glGenBuffers(1, &EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
+
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+                        (void *)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
   glCheckError();
+  //   int transformLoc = glGetUniformLocation(shader_program, "transform");
 
-  int transformLoc = glGetUniformLocation(shader_program, "transform");
-
-  float x = 0.0f, y = 0.0f;
+  glUseProgram(shader_program);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glBindVertexArray(VAO);
 
   while (!glfwWindowShouldClose(window)) {
-    double time = glfwGetTime();
-
     glClearColor(135.0f / 255.0f, 206.0f / 255.0f, 235.0f / 255.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Calculate transform
-    mat4 transform;
-    glm_mat4_identity(transform);
-    glm_scale(transform, (vec3){0.5f, 0.5f, 0.0f});
-
-    x = sin(time);
-    y = cos(time);
-
-    glm_rotated_at(transform, (vec3){x, y, 0.0f}, time,
-                   (vec3){0.0f, 1.0f, 1.0f});
-
-    // glm_translate(transform, (vec3){x, y, 0.0f});
-
-    glUseProgram(shader_program);
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, (const float *)transform);
-
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glCheckError();
 
     glfwSwapBuffers(window);
     glfwPollEvents();

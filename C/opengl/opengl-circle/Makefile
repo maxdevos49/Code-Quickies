@@ -1,19 +1,17 @@
 CC=clang
 CFLAGS=\
-	-std=c11					\
-	-Wall						\
-	-Wextra						\
-	-Werror						\
-	-pedantic					\
-	-I../vendor/glad/include	\
-	-I../vendor/glfw/3.4/include
-LIBS=-L../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
+	-std=c11 						\
+	-Wall							\
+	-Wextra							\
+	-Werror							\
+	-pedantic 						\
+	-I../../vendor/glad/include		\
+	-I../../vendor/glfw/3.4/include
+LIBS=-L../../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
 
-TARGET=bin/triangle
+TARGET=bin/circle
 OBJ=\
-	obj/main.o\
-	obj/readall.o\
-	obj/shader.o
+	obj/main.o
 
 #
 # Configure above
@@ -42,5 +40,3 @@ DEP=$(OBJ:.o=.d)
 .PHONY: clean
 clean:
 	rm -rf bin obj
-
-

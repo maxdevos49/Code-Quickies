@@ -5,10 +5,10 @@ CFLAGS=\
 	-Wextra						\
 	-Werror						\
 	-pedantic					\
-	-I../vendor/glad/include	\
-	-I../vendor/stb/include		\
-	-I../vendor/glfw/3.4/include
-LIBS=-L../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
+	-I../../vendor/glad/include	\
+	-I../../vendor/stb/include		\
+	-I../../vendor/glfw/3.4/include
+LIBS=-L../../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
 
 TARGET=bin/texture
 OBJ=\

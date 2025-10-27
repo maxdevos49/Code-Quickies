@@ -1,16 +1,15 @@
 CC=clang
 CFLAGS=\
-	-std=c11 						\
-	-Wall							\
-	-Wextra							\
-	-Werror							\
-	-pedantic 						\
-	-I../vendor/glad/include		\
-	-I../vendor/glfw/3.4/include
-LIBS=-L../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
+	-std=c11					\
+	-Wall						\
+	-Wextra						\
+	-pedantic
+LIBS=
 
-TARGET=bin/circle
+TARGET=bin/lrucache
 OBJ=\
+	obj/lru-cache.o\
+	obj/hashmap.o\
 	obj/main.o
 
 #
@@ -22,7 +21,7 @@ release: CFLAGS+= -O3 -Werror
 release: $(TARGET)
 
 .PHONY: debug
-debug: CFLAGS+= -g -O0 -DDEBUG -fsanitize=address,undefined,signed-integer-overflow,unsigned-integer-overflow
+debug: CFLAGS+= -g -O0 -DDEBUG -fsanitize=address,undefined,signed-integer-overflow
 debug: $(TARGET)
 
 $(TARGET): bin obj $(OBJ)
@@ -40,3 +39,5 @@ DEP=$(OBJ:.o=.d)
 .PHONY: clean
 clean:
 	rm -rf bin obj
+
+

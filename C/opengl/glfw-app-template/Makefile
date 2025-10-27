@@ -3,26 +3,25 @@ CFLAGS=\
 	-std=c11					\
 	-Wall						\
 	-Wextra						\
-	-Werror						\
 	-pedantic					\
-	-I../vendor/glad/include	\
-	-I../vendor/glfw/3.4/include
-LIBS=-L../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
+	-I../../vendor/glad/include	\
+	-I../../vendor/glfw/3.4/include
+LIBS=-L../../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
 
-TARGET=bin/cube
+TARGET=bin/glfw-app-template
 OBJ=\
-	obj/main.o\
+	obj/main.o
 
 #
 # Configure above
 # ==============================================================================
 
 .PHONY: release
-release: CFLAGS+= -O3 -Werror
+release: CFLAGS+= -O3 -Werror -march=native -flto -DNDEBUG
 release: $(TARGET)
 
 .PHONY: debug
-debug: CFLAGS+= -g -O0 -DDEBUG -fsanitize=address,undefined,signed-integer-overflow,unsigned-integer-overflow
+debug: CFLAGS+= -g -O0 -DDEBUG -fsanitize=address,undefined,signed-integer-overflow
 debug: $(TARGET)
 
 $(TARGET): bin obj $(OBJ)

@@ -1,18 +1,17 @@
 CC=clang
 CFLAGS=\
-	-std=c11					\
+	-std=c11 					\
 	-Wall						\
 	-Wextra						\
 	-Werror						\
 	-pedantic 					\
-	-I../vendor/cglm/0.9.6/include
-LIBS=
+	-I../../vendor/glad/include	\
+	-I../../vendor/glfw/3.4/include
+LIBS=-L../../vendor/glfw/3.4/lib -lglfw -framework Cocoa -framework IOKit -framework CoreFoundation
 
-TARGET=bin/voxel-terrain
+TARGET=bin/square
 OBJ=\
-	obj/main.o\
-	obj/chunk.o\
-	obj/block.o
+	obj/main.o
 
 #
 # Configure above
@@ -41,5 +40,3 @@ DEP=$(OBJ:.o=.d)
 .PHONY: clean
 clean:
 	rm -rf bin obj
-
-
